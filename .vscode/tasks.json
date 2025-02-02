@@ -1,0 +1,31 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++ compile all in src",
+            "command": "/usr/bin/g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}/src/*.cpp",
+                "${workspaceFolder}/src/*/*.cpp",
+                "-o",
+                "${workspaceFolder}/bin/main",
+                "-lcurl",
+                "-lsimdjson",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Build task to compile all .cpp files in the src folder."
+        }
+    ],
+    "version": "2.0.0"
+}
