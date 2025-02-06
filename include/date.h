@@ -1,9 +1,9 @@
 #include <string>
-#include "../include/file_parser.h"
-time_t strdate(char* date, std::string &format);
-struct tm next_business_day(time_t &date);
-holidays filter_holidays(time_t start_date, holidays *saved_holidays, int &holidays_count);
+#include "../include/investiments.h"
+
+struct tm getnextbusinessday(time_t &date);
 int getmonthdays(tm date);
-int businessdays(tm date, holidays *saved_holidays, int &holidays_count);
-std::string todatetimestr(time_t time, const char *format);
+int getbusinessdays(tm date, std::vector<Investiment::holidays> saved_holidays);
 std::string getholidays();
+void convertdatetofileformat(tm& provided_date, std::string& data);
+std::vector<Investiment::holidays> filterholidays(time_t& start_date, std::vector<Investiment::holidays> &saved_holidays);

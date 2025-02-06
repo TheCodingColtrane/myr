@@ -3,22 +3,11 @@
 #include <string>
 #include <vector>
 #include "indexes.h"
-struct investiments {
-   std::string nome;
-   double percentual;
-   double valor_investido;
-   time_t data_inicio;
-   time_t data_fim; 
-   int investiments_count;
-};
+#include "investiments.h"
 
-struct holidays {
-   std::string name;
-   time_t date; 
-};
-
-investiments *parse_investiments(std::string &rows);
-holidays *parse_holidays(std::string &rows);
+class Investiment;
 std::vector<Indexes::volatile_index> parseindexers(std::string &rows);
+std::vector<Investiment::investiments> parseinvestiments(std::string &rows);
+std::vector<Investiment::holidays> parseholidays(std::string &rows);
 
 #endif

@@ -6,24 +6,8 @@
 #include <time.h>
 #include <iostream>
 
-time_t strdate(char *date, std::string &format)
-{
-    struct tm datetime = {};
-    char *result = strptime(date, format.data(), &datetime);
-    if (!result)
-    {
-        std::cerr << "Error parsing date: " << date << "\n";
-        return -1;
-    }
-    time_t parsedTime = mktime(&datetime);
-    if (parsedTime == -1)
-    {
-        std::cerr << "Error converting to time_t: " << date << "\n";
-    }
-    return parsedTime;
-}
 
-struct tm next_business_day(time_t &date)
+struct tm getnextbusinessday(time_t &date)
 {
     tm start_date = *localtime(&date);
     if (start_date.tm_wday == 6)
@@ -57,33 +41,22 @@ int getmonthdays(tm date)
         return 31;
 }
 
-std::string todatetimestr(time_t time, const char *format)
-{
-    char buffer[100];
-    struct tm *timeinfo = localtime(&time);
-    if (timeinfo == nullptr)
-    {
-        return "Invalid time";
-    }
-    strftime(buffer, sizeof(buffer), format, timeinfo);
-    return std::string(buffer);
-}
 
-time_t increment_date(time_t current_date)
+time_t incrementdate(time_t current_date)
 {
     struct tm date_tm = *localtime(&current_date);
     date_tm.tm_mday += 1;
     return mktime(&date_tm);
 }
 
-int businessdays(tm date, holidays *saved_holidays, int &holidays_count)
+int getbusinessdays(tm date, vector<Investiment::holidays> saved_holidays)
 {
-    int month_days = getmonthdays(date), business_days = 0, i = 0;
+    int month_days = getmonthdays(date), business_days = 0, i = 0, holidays_count = saved_holidays.size();
     time_t month_start = mktime(&date);
     struct tm final_date = date;
     final_date.tm_mday = month_days;
     time_t month_end = mktime(&final_date);
-    for (time_t current_date = month_start; current_date <= month_end; current_date = increment_date(current_date))
+    for (time_t current_date = month_start; current_date <= month_end; current_date = incrementdate(current_date))
     {
         struct tm date = *localtime(&current_date);
         if (date.tm_wday == 6 || date.tm_wday == 0)
@@ -109,11 +82,12 @@ int businessdays(tm date, holidays *saved_holidays, int &holidays_count)
     return business_days;
 }
 
-holidays filter_holidays(time_t start_date, holidays *saved_holidays, int &holidays_count)
+
+std::vector<Investiment::holidays> filterholidays(time_t& start_date, std::vector<Investiment::holidays> &saved_holidays)
 {
-    tm date = next_business_day(start_date);
+    tm date = getnextbusinessday(start_date);
     time_t current_date = mktime(&date);
-    int relevant_holidays_count = 0;
+    int relevant_holidays_count = 0, holidays_count = saved_holidays.size();
     for (int i = 0; i < holidays_count; i++)
     {
         if (current_date > saved_holidays[i].date)
@@ -121,32 +95,49 @@ holidays filter_holidays(time_t start_date, holidays *saved_holidays, int &holid
             relevant_holidays_count = i;
             break;
         }
+
     }
 
-    holidays *relevant_holidays = new holidays[relevant_holidays_count];
+    Investiment::holidays *relevant_holidays = new Investiment::holidays[relevant_holidays_count];
     for (int i = 0; i < relevant_holidays_count; i++)
     {
         relevant_holidays[i].date = saved_holidays[i].date;
     }
     holidays_count = relevant_holidays_count;
-    saved_holidays = relevant_holidays;
-    holidaysheapsort(saved_holidays, holidays_count, compareholidaysdate);
-    return *saved_holidays;
+    holidaysheapsort(relevant_holidays, holidays_count, compareholidaysdate);
+    saved_holidays.clear();
+    for(int i = 0; i < holidays_count; i++){
+        Investiment::holidays holiday = {};
+        holiday.date = relevant_holidays[i].date;
+        saved_holidays.push_back(holiday);
+    }
+    delete[] relevant_holidays;
+    return saved_holidays;
 }
 
+std::string getholidays()
+{
+    time_t date = time(&date);
+    struct tm datetime = *localtime(&date);
+    int current_year = datetime.tm_year + 1900;
+    int years = current_year - 1990;
+    std::string json_holidaysm, holidays_file_content, json_holidays;
+    for (int year = current_year; year >= 1990; year--)
+    {
+        std::string uri = "https://brasilapi.com.br/api/feriados/v1/" + std::to_string(year);
+        json_holidays = get(uri);
+        holidays_file_content += parse_json_holidays(json_holidays);
+    }
 
-std::string getholidays(){    
-        time_t date = time(&date);
-        struct tm datetime = *localtime(&date);
-        int current_year = datetime.tm_year + 1900;
-        int years = current_year - 1990;
-        std::string json_holidaysm, holidays_file_content, json_holidays;
-        for (int year = current_year; year >= 1990; year--)
-        {
-            std::string uri = "https://brasilapi.com.br/api/feriados/v1/" + std::to_string(year);
-            json_holidays = get(uri);
-            holidays_file_content += parse_json_holidays(json_holidays);
-        }
+    return holidays_file_content;
+}
 
-        return holidays_file_content;
+void convertdatetofileformat(tm& provided_date, string& data)
+{
+    int fpos = 0; 
+    if(data[0] == ' ') fpos = 1;
+    else fpos = 0;
+    provided_date.tm_year = std::stoi(data.substr(fpos, fpos + 4)) - 1900;
+    provided_date.tm_mon = std::stoi(data.substr(fpos + 5, fpos + 7)) - 1;
+    provided_date.tm_mday = std::stoi(data.substr(fpos + 8));
 }

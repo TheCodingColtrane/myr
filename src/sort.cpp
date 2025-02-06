@@ -1,7 +1,7 @@
 #include <array>
 #include "../include/file_parser.h"
 
-void holidaysheap(holidays dados[], int n, int i, bool (*compare)(const holidays&, const holidays&)) {
+void holidaysheap(Investiment::holidays dados[], int n, int i, bool (*compare)(const Investiment::holidays&, const Investiment::holidays&)) {
     int maior = i;
     int esq = 2 * i + 1;
     int dir = 2 * i + 2;
@@ -15,7 +15,7 @@ void holidaysheap(holidays dados[], int n, int i, bool (*compare)(const holidays
     }
 }
 
-void holidaysheapsort(holidays dados[], int n, bool (*compare)(const holidays&, const holidays&)) {
+void holidaysheapsort(Investiment::holidays dados[], int n, bool (*compare)(const Investiment::holidays&, const Investiment::holidays&)) {
     for (int i = n / 2 - 1; i >= 0; --i) {
         holidaysheap(dados, n, i, compare);
     }
@@ -26,7 +26,7 @@ void holidaysheapsort(holidays dados[], int n, bool (*compare)(const holidays&, 
     }
 }
 
-void investimentsheap(investiments dados[], int n, int i, bool (*compare)(const investiments&, const investiments&)) {
+void investimentsheap(Investiment::investiments dados[], int n, int i, bool (*compare)(const Investiment::investiments&, const Investiment::investiments&)) {
     int maior = i;
     int esq = 2 * i + 1;
     int dir = 2 * i + 2;
@@ -40,7 +40,7 @@ void investimentsheap(investiments dados[], int n, int i, bool (*compare)(const 
     }
 }
 
-void investimentheapsort(investiments dados[], int n, bool (*compare)(const investiments&, const investiments&)) {
+void investimentheapsort(Investiment::investiments dados[], int n, bool (*compare)(const Investiment::investiments&, const Investiment::investiments&)) {
     for (int i = n / 2 - 1; i >= 0; --i) {
         investimentsheap(dados, n, i, compare);
     }
@@ -51,10 +51,10 @@ void investimentheapsort(investiments dados[], int n, bool (*compare)(const inve
     }
 }
 
-bool compareholidaysdate(const holidays& a, const holidays& b) {
+bool compareholidaysdate(const Investiment::holidays& a, const Investiment::holidays& b) {
     return a.date < b.date;
 }
 
-bool compareinvestmentdate(const investiments& a, const investiments& b) {
-    return a.data_inicio < b.data_inicio;
+bool compareinvestmentdate(const Investiment::investiments& a, const Investiment::investiments& b) {
+    return a.starting_date < b.starting_date;
 }

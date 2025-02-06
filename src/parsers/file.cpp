@@ -1,86 +1,10 @@
 #include "../../include/file_parser.h"
 #include "../../include/date.h"
 #include "../../include/indexes.h"
+#include "../../include/investiments.h"
 #include <algorithm>
 #include <iostream>
 #include <vector>
-std::string local_date_format = "%d/%m/%Y";
-std::string base_date_format = "%Y-%m-%d";
-
-investiments *parse_investiments(std::string &rows)
-{
-    std::string::difference_type investiments_count = std::count(rows.begin(), rows.end(), ';');
-    investiments *my_investiments = new investiments[investiments_count];
-    std::string raw_rows = rows;
-    int row_chars = raw_rows.length();
-    int column = 0;
-    int row_number = 0;
-    std::string current_row;
-
-    for (int i = 0; i < row_chars; i++)
-    {
-        if (raw_rows[i] != ';')
-        {
-            if (raw_rows[i] != ',')
-            {
-                current_row += raw_rows[i];
-                continue;
-            }
-            else
-            {
-                if (!column)
-                {
-                    my_investiments[row_number].nome = current_row;
-                    current_row = "";
-                }
-                else if (column == 1)
-                {
-                    my_investiments[row_number].percentual = stod(current_row);
-                    current_row = "";
-                }
-                else if (column == 2)
-                {
-                    my_investiments[row_number].valor_investido = stod(current_row);
-                    current_row = "";
-                }
-                else if (column == 3)
-                {
-                    my_investiments[row_number].data_inicio = strdate(current_row.substr(1, current_row.length()).data(), local_date_format);
-                    current_row = "";
-                }
-
-                column++;
-            }
-        }
-        else
-        {
-            my_investiments[row_number].data_fim = strdate(current_row.substr(1, current_row.length()).data(), local_date_format);
-            row_number++;
-            current_row = "";
-            column = 0;
-        }
-    }
-    return my_investiments;
-}
-
-holidays *parse_holidays(std::string &rows)
-{
-    std::string::difference_type holidays_count = std::count(rows.begin(), rows.end(), '\n');
-    holidays *relevant_holidays = new holidays[holidays_count];
-    std::string raw_rows = rows;
-    int row_chars = raw_rows.length();
-    int aux = 0;
-    int row_number = 0;
-    for (int i = 0; i < row_chars; i++)
-    {
-        if (raw_rows[i] == '\n')
-            continue;
-        relevant_holidays[row_number].date = strdate(raw_rows.substr(i, i + 10).data(), base_date_format);
-        i += 10;
-        row_number++;
-    }
-    return relevant_holidays;
-}
 
 std::vector<Indexes::volatile_index> parseindexers(std::string &rows)
 {
@@ -128,3 +52,92 @@ std::vector<Indexes::volatile_index> parseindexers(std::string &rows)
    return indexes;
 
 }
+
+std::vector<Investiment::investiments> parseinvestiments(std::string &rows)
+{
+    std::vector<Investiment::investiments> investiments = {};
+    struct Investiment::investiments investiment = {};
+    int char_count = rows.length();
+    int column = 0;
+    int row_number = 0;
+    std::string current_row;
+    tm data = {};
+
+    for (int i = 0; i < char_count; i++)
+    {
+        if (rows[i] != '\n')
+        {
+            if (rows[i] != ',')
+            {
+                current_row += rows[i];
+                continue;
+            }
+            else
+            {
+                if (!column)
+                {
+                    investiment.asset_name = current_row;
+                    current_row = "";
+                }
+                else if (column == 1)
+                {
+                    investiment.rate = stod(current_row);
+                    current_row = "";
+                }
+                else if (column == 2)
+                {
+                    investiment.value = stod(current_row);
+                    current_row = "";
+                }
+                else if (column == 3)
+                {   
+                    convertdatetofileformat(data, current_row);
+                    investiment.starting_date = mktime(&data);
+                    current_row = "";
+                }
+
+                column++;
+            }
+        }
+        else
+        {
+            convertdatetofileformat(data, current_row);
+            investiment.ending_date = mktime(&data);
+            current_row = "";
+            investiments.push_back(investiment);
+            column = 0;
+        }
+    }
+    return investiments;
+    
+}
+
+
+std::vector<Investiment::holidays> parseholidays(std::string &rows)
+{
+    std::vector<Investiment::holidays> relevant_holidays;
+    struct tm date = {};
+    Investiment::holidays holidays = {};
+    std::string raw_rows = rows, temp_date = "";
+    int row_chars = raw_rows.length();
+    int aux = 0;
+    for (int i = 0; i < row_chars; i++)
+    {
+        if (raw_rows[i] == '\n'){
+        date.tm_year =  std::stoi(temp_date.substr(0, 4)) - 1900;
+        date.tm_mon = std::stoi(temp_date.substr(5, 2)) - 1;
+        date.tm_mday = std::stoi(temp_date.substr(8, 2));
+        holidays.date = mktime(&date);
+        relevant_holidays.push_back(holidays);
+        holidays = {};
+        i += 11;
+        temp_date = "";
+        continue;
+        }
+
+        else temp_date += raw_rows[i]; 
+    
+    }
+    return relevant_holidays;
+}
+

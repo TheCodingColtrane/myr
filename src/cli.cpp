@@ -1,10 +1,10 @@
 #include "../include/cli.h"
 #include "../include/file.h"
+#include "../include/file_parser.h"
 #include "../include/date.h"
 #include "../include/indexes.h"
-#include <vector>
-
-
+#include "../include/bufferedfile.h"
+#include "../include/investiments.h"
 
 void CLI::checkforupdates(){
     bool * required_files = new bool[3];
@@ -42,16 +42,31 @@ void CLI::checkforupdates(){
 
 }
 
-void CLI::showcommands() {
+void::CLI::profit(){
+    BufferedFileHandler investiments_handler("../investiments.csv");
+    BufferedFileHandler holidays_handler("../holidays.csv");
+    std::string investiments_data = investiments_handler.read();
+    std::string holidays_data = holidays_handler.read();
+    auto investiments = parseinvestiments(investiments_data);
+    auto holidays = parseholidays(holidays_data);
+    Investiment *investiment = new Investiment();
+    for(auto current_investiment : investiments){
+        investiment->profit(current_investiment, holidays);
+    }
+
+}
+
+
+void CLI::setupcommands() {
         commands["help"] = {
             "Display all available commands",
             [this]() { showhelp(); }
         };
 
-        // commands["profit"] = {
-        //     "Calculate potential profit from investment",
-        //     [this]() { calculateProfit(); }
-        // };
+        commands["profit"] = {
+            "Calculate potential profit from investment",
+            [this]() { profit(); }
+        };
 
         // commands["roi"] = {
         //     "Calculate Return on Investment (ROI)",

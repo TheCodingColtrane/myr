@@ -43,5 +43,9 @@ public:
     void showhelp();
     void run();
     void checkforupdates();
-
+    void profit();
+    void setupcommands();
+    CLI(){
+        setupcommands();
+    }
 };
