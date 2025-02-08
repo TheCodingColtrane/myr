@@ -51,7 +51,8 @@ void::CLI::profit(){
     auto holidays = parseholidays(holidays_data);
     Investiment *investiment = new Investiment();
     for(auto current_investiment : investiments){
-        investiment->profit(current_investiment, holidays);
+        auto money = investiment->profit(current_investiment, holidays);
+        std::cout << "Seu dinheiro rendeu: " + std::to_string(money[0]) + " de: " + std::to_string(money[1]) + " com imposto tirado na fonte " + std::to_string(money[2]) << std::endl;
     }
 
 }

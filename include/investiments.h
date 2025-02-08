@@ -20,7 +20,7 @@ public:
         time_t date;
     };
     float roi();
-    float profit(investiments investiment, std::vector<holidays> holiday);
+    float* profit(investiments investiment, std::vector<holidays> holiday);
 };
 
 // void delete_investiment();

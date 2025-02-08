@@ -49,33 +49,34 @@ time_t incrementdate(time_t current_date)
     return mktime(&date_tm);
 }
 
-int getbusinessdays(tm date, vector<Investiment::holidays> saved_holidays)
+int getbusinessdays(tm date, vector<Investiment::holidays> saved_holidays, int &elapsed_days)
 {
     int month_days = getmonthdays(date), business_days = 0, i = 0, holidays_count = saved_holidays.size();
     time_t month_start = mktime(&date);
     struct tm final_date = date;
-    final_date.tm_mday = month_days;
+    final_date.tm_mday = month_days;    
     time_t month_end = mktime(&final_date);
     for (time_t current_date = month_start; current_date <= month_end; current_date = incrementdate(current_date))
     {
         struct tm date = *localtime(&current_date);
-        if (date.tm_wday == 6 || date.tm_wday == 0)
+        if (date.tm_wday == 6 || date.tm_wday == 0){
+            elapsed_days++;
             continue;
+        }
         if (holidays_count > 0)
         {
             if (current_date > saved_holidays[i].date)
             {
                 i++;
                 business_days++;
-                continue;
             }
-            else if (current_date < saved_holidays[i].date)
-            {
-                business_days++;
-                continue;
-            }
-        }
+            else if (current_date < saved_holidays[i].date) business_days++;
+            elapsed_days++;
+            continue;
 
+            
+        }   
+        elapsed_days++;
         business_days++;
     }
 
